@@ -1,0 +1,4 @@
+.env
+google-creds.json
+spotify-history-saver
+spotify_token.gob

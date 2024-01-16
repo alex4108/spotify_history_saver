@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spotify-history-saver
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spotify-history-saver
+  namespace: spotify-history-saver
+type: Opaque
+data:
+  SPOTIFY_CLIENT_ID: .. # echo -n "$SPOTIFY_CLIENT_ID" | base64
+  SPOTIFY_CLIENT_SECRET: ..
+  SPOTIFY_USER_ID: ..
+  GOOGLE_SHEETS_CREDENTIAL: ..
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spotify-pvc
+  namespace: spotify-history-saver
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-history-saver
+  namespace: spotify-history-saver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spotify-history-saver
+  template:
+    metadata:
+      labels:
+        app: spotify-history-saver
+    spec:
+      volumes:
+      - name: spotify-pvc
+        persistentVolumeClaim:
+          claimName: spotify-pvc
+      containers:
+      - name: spotify-container
+        imagePullPolicy: Always
+        image: alex4108/spotify_history_saver:latest # You should pin to a specific SHA
+        env:
+        - name: SPOTIFY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: spotify-history-saver
+              key: SPOTIFY_CLIENT_ID
+        - name: SPOTIFY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: spotify-history-saver
+              key: SPOTIFY_CLIENT_SECRET
+        - name: SPOTIFY_USER_ID
+          valueFrom:
+            secretKeyRef:
+              name: spotify-history-saver
+              key: SPOTIFY_USER_ID
+        - name: GOOGLE_SHEETS_CREDENTIAL
+          valueFrom:
+            secretKeyRef:
+              name: spotify-history-saver
+              key: GOOGLE_SHEETS_CREDENTIAL
+        - name: SPOTIFY_REDIRECT_URI
+          value: https://spotify-history-saver.yourdomain/callback
+        - name: SPOTIFY_TOKEN_FILE
+          value: /persist/spotify.token
+        - name: HTTP_PORT
+          value: "8080"
+        - name: GOOGLE_SHEET_NAME
+          value: Sheet1
+        - name: GOOGLE_SHEET_ID
+          value: 14....
+        - name: LOG_LEVEL
+          value: warn
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /persist
+          name: spotify-pvc
+        resources:
+          requests:
+            memory: 500M
+          limits:
+            memory: 500M
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-service
+  namespace: spotify-history-saver
+spec:
+  selector:
+    app: spotify-history-saver
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spotify-ingress
+  namespace: spotify-history-saver
+  #annotations: 
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: spotify-history-saver.yourdomain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: spotify-service
+            port:
+              number: 80
