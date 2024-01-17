@@ -45,6 +45,7 @@ jobs:
         tags: |
           alex4108/spotify_history_saver:latest
           alex4108/spotify_history_saver:${{ github.sha }}
+          alex4108/spotify_history_saver:${{ steps.tag_version.outputs.new_tag }}
 
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
