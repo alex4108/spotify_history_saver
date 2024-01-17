@@ -68,10 +68,10 @@ func init() {
 
 func main() {
 	err := godotenv.Load()
+	setLogLevelFromEnv()
 	if err != nil {
 		log.Info(".env file not found!")
 	}
-	setLogLevelFromEnv()
 
 	// Expose Prometheus metrics endpoint
 	go func() {
