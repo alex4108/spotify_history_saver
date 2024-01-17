@@ -7,6 +7,14 @@
 
 [Latest Releases](https://github.com/alex4108/spotify_history_saver/releases)
 
+## What does it do?
+
+This container pulls your recent spotify play history using the [Spotify API](https://developer.spotify.com/documentation/web-api/reference/get-recently-played).  It then records this data in a sorted, deduplicated manner in [Google Sheets](https://sheets.google.com)
+
+I use this so I can persist the data about my spotify plays and do my own analysis on it in the future.
+
+If you found this project helpful please Star the repo!
+
 ## Usage
 
 This app is published as a docker container.  The `:latest` tag *should* be stable, although recommend Watching the repo and pinning build tags.
