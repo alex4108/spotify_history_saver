@@ -62,6 +62,7 @@ const (
 func init() {
 	// Register Prometheus metrics
 	prometheus.MustRegister(spotifyRequestDuration)
+	prometheus.MustRegister(googleRequestDuration)
 	prometheus.MustRegister(authenticated)
 	prometheus.MustRegister(lastRunSuccess)
 }
@@ -158,7 +159,10 @@ func run() {
 	spotifyRequestDuration.WithLabelValues("getRecentTracks").Observe(duration)
 
 	// Write the data to Google Sheet
+	startTime = time.Now()
 	writeToSheet(os.Getenv("GOOGLE_SHEET_ID"), os.Getenv("GOOGLE_SHEET_NAME"), recentTracks)
+	duration = time.Since(startTime).Seconds()
+	googleRequestDuration.WithLabelValues("writeToSheet").Observe(duration)
 	lastRunSuccess.WithLabelValues().Set(1)
 	log.Infof("Spotify history recorded successfully.")
 }
