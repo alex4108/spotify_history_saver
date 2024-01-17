@@ -1,7 +1,7 @@
 # Spotify History Saver
 
 [![Build and Push](https://github.com/alex4108/spotify_history_saver/actions/workflows/build.yml/badge.svg)](https://github.com/alex4108/spotify_history_saver/actions/workflows/build.yml)
-[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/alex4108/spotify_history_saver)](https://hub.docker.com/alex4108/spotify_history_saver)
+[![Docker Image Version](https://img.shields.io/docker/v/alex4108/spotify_history_saver)](https://hub.docker.com/alex4108/spotify_history_saver)
 [![GitHub issues](https://img.shields.io/github/issues/alex4108/spotify_history_saver)](https://github.com/alex4108/spotify_history_saver/issues)
 [![Docker Pulls](https://img.shields.io/docker/pulls/alex4108/spotify_history_saver)](https://hub.docker.com/alex4108/spotify_history_saver)
 

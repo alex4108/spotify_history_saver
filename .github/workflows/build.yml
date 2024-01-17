@@ -52,4 +52,4 @@ jobs:
       with:
         tag: ${{ steps.tag_version.outputs.new_tag }}
         name: Release ${{ steps.tag_version.outputs.new_tag }}
-        body: "${{ steps.tag_version.outputs.new_tag }}\n\nContainer URI: hub.docker.com/alex4108/spotify_history_saver@${{steps.docker.outputs.digest}}"
+        body: "${{ steps.tag_version.outputs.new_tag }}\n\nContainer URI: alex4108/spotify_history_saver:latest@${{steps.docker.outputs.digest}}"
