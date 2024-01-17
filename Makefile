@@ -6,6 +6,11 @@ build:
 	go build -o spotify-history-saver .
 
 run: build
+	sed -i 's/DAEMON=.*/DAEMON=0/g' .env
+	./spotify-history-saver
+
+run-daemon: build
+	sed -i 's/DAEMON=.*/DAEMON=1/g' .env
 	./spotify-history-saver
 
 build-container:

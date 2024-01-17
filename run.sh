@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exuo pipefail
+set -euo pipefail
 chmod +x /app/spotify-history-saver
 
 while true; do

@@ -77,14 +77,21 @@ spec:
           value: /persist/spotify.token
         - name: HTTP_PORT
           value: "8080"
+        - name: METRICS_HTTP_PORT
+          value: "8081"
         - name: GOOGLE_SHEET_NAME
           value: Sheet1
         - name: GOOGLE_SHEET_ID
           value: 14....
         - name: LOG_LEVEL
           value: warn
+        - name: DAEMON
+          value: "1"
+        - name: DAEMON_SLEEP_SECS
+          value: "60"
         ports:
         - containerPort: 8080
+        - containerPort: 8081
         volumeMounts:
         - mountPath: /persist
           name: spotify-pvc
@@ -108,6 +115,20 @@ spec:
     port: 80
     targetPort: 8080
   type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-history-saver-metrics
+  namespace: spotify-history-saver
+spec:
+  selector:
+    app: spotify-history-saver
+  ports:
+  - protocol: TCP
+    port: 8081
+    targetPort: 8081
+  type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

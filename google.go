@@ -4,12 +4,22 @@ import (
 	"context"
 	"encoding/base64"
 	"os"
+	"sort"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
+
+func sortTracks(tracks []SpotifyTrack) []SpotifyTrack {
+	// Sort tracks by PlayedAt in ascending order (oldest first)
+	sort.Slice(tracks, func(i, j int) bool {
+		return tracks[i].PlayedAt.Before(tracks[j].PlayedAt)
+	})
+
+	return tracks
+}
 
 func writeToSheet(spreadsheetID string, sheetName string, tracksToInsert []SpotifyTrack) {
 	// Authenticate with Google Sheets API
@@ -20,9 +30,12 @@ func writeToSheet(spreadsheetID string, sheetName string, tracksToInsert []Spoti
 
 	var values [][]interface{}
 
+	// Sort tracks oldest to newest
+	sortedTracks := sortTracks(tracksToInsert)
+
 	// Iterate through tracks and add them to the values
 	i := 0
-	for _, track := range tracksToInsert {
+	for _, track := range sortedTracks {
 		i++
 		log.Infof("Iteration: %v", i)
 
