@@ -32,8 +32,16 @@ var (
 
 	googleRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "googlesheets_request_duration_seconds",
+			Name: "googlesheets_request_duration_ms",
 			Help: "Histogram of the duration of Google Sheets API requests.",
+		},
+		[]string{"endpoint"},
+	)
+
+	postgresWriteDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "postgres_write_duration_ms",
+			Help: "Histogram of the duration of Postgres Write requests.",
 		},
 		[]string{"endpoint"},
 	)
@@ -52,6 +60,13 @@ var (
 			Help: "1 if last run was clean, 0 if not",
 		},
 		[]string{},
+	)
+
+	postgresErrors = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "postgres_errors",
+			Help: "Number of reported postgres errors",
+		},
 	)
 )
 
@@ -86,7 +101,7 @@ func main() {
 	if os.Getenv("DAEMON") == "1" {
 		seconds, err := strconv.ParseInt(os.Getenv("DAEMON_SLEEP_SECS"), 10, 0)
 		if err != nil {
-			log.Fatal("Invalid DAEMON_SLEEP_SECS: %v", err)
+			log.Fatalf("Invalid DAEMON_SLEEP_SECS: %v", err)
 		}
 		run()
 
@@ -160,9 +175,30 @@ func run() {
 
 	// Write the data to Google Sheet
 	startTime = time.Now()
-	writeToSheet(os.Getenv("GOOGLE_SHEET_ID"), os.Getenv("GOOGLE_SHEET_NAME"), recentTracks)
-	duration = time.Since(startTime).Seconds()
-	googleRequestDuration.WithLabelValues("writeToSheet").Observe(duration)
+	written := false
+	if os.Getenv("USE_GOOGLE_SHEETS") == "1" {
+		writeToSheet(os.Getenv("GOOGLE_SHEET_ID"), os.Getenv("GOOGLE_SHEET_NAME"), recentTracks)
+		duration = float64(time.Since(startTime).Seconds())
+		googleRequestDuration.WithLabelValues("writeToSheet").Observe(duration)
+		written = true
+	}
+	if os.Getenv("USE_POSTGRES") == "1" {
+		writeToPostgres(
+			os.Getenv("POSTGRES_HOST"),
+			os.Getenv("POSTGRES_USERNAME"),
+			os.Getenv("POSTGRES_PASSWORD"),
+			os.Getenv("POSTGRES_PORT"),
+			os.Getenv("POSTGRES_DB"),
+			recentTracks,
+		)
+		duration = float64(time.Since(startTime).Seconds())
+		postgresWriteDuration.WithLabelValues("writeToSheet").Observe(duration)
+		written = true
+	}
+	if !written {
+		log.Errorf("Failed to write, no USE_ env variable was set!")
+	}
+
 	lastRunSuccess.WithLabelValues().Set(1)
 	log.Infof("Spotify history recorded successfully.")
 }

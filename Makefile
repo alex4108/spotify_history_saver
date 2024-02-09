@@ -19,6 +19,10 @@ build-container:
 push-container: build-container
 	docker push alex4108/spotify_history_saver:latest
 
+docker-compose:
+	docker compose build
+	docker compose up
+
 clean:
 	rm -f main
 	

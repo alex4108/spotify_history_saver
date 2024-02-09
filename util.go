@@ -2,11 +2,21 @@ package main
 
 import (
 	"os"
+	"sort"
 	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
+
+func sortTracks(tracks []SpotifyTrack) []SpotifyTrack {
+	// Sort tracks by PlayedAt in ascending order (oldest first)
+	sort.Slice(tracks, func(i, j int) bool {
+		return tracks[i].PlayedAt.Before(tracks[j].PlayedAt)
+	})
+
+	return tracks
+}
 
 func matchExists(track SpotifyTrack) bool {
 	if globalSheetData == nil {

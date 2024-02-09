@@ -33,6 +33,8 @@ metadata:
   name: spotify-history-saver
   namespace: spotify-history-saver
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:
@@ -79,6 +81,8 @@ spec:
           value: "8080"
         - name: METRICS_HTTP_PORT
           value: "8081"
+        - name: USE_GOOGLE_SHEETS
+          value: "0"
         - name: GOOGLE_SHEET_NAME
           value: Sheet1
         - name: GOOGLE_SHEET_ID
@@ -88,7 +92,19 @@ spec:
         - name: DAEMON
           value: "1"
         - name: DAEMON_SLEEP_SECS
-          value: "60"
+          value: "300"
+        - name: USE_POSTGRES
+          value: "1"
+        - name: POSTGRES_HOST
+          value: postgres-svc
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USERNAME
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
         ports:
         - containerPort: 8080
         - containerPort: 8081
@@ -129,6 +145,69 @@ spec:
     port: 8081
     targetPort: 8081
   type: ClusterIP
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: spotify-history-saver
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: spotify-history-saver
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: spotify-history-saver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: postgres
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+      restartPolicy: Always
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
