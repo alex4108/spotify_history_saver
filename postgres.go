@@ -9,9 +9,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func writeToPostgres(host string, username string, password string, port string, database string, trackData []SpotifyTrack) {
+func writeToPostgres(host, username, password, port, database, sslMode string, trackData []SpotifyTrack) {
 	// Connect to PG
-	db, err := connectToDatabase(host, username, password, port, database)
+	db, err := connectToDatabase(host, username, password, port, database, sslMode)
 	if err != nil {
 		log.Fatalf("Failed to connect to pg: %v", err)
 	}
@@ -76,10 +76,10 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 	return exists, nil
 }
 
-func connectToDatabase(host string, user string, password string, port string, dbname string) (*sql.DB, error) {
+func connectToDatabase(host, user, password, port, dbname, sslmode string) (*sql.DB, error) {
 	// Build the connection string
 	connectionString :=
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 			host, port, user, password, dbname)
 
 	// Open a connection to the database

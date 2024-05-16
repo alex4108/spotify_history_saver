@@ -189,6 +189,7 @@ func run() {
 			os.Getenv("POSTGRES_PASSWORD"),
 			os.Getenv("POSTGRES_PORT"),
 			os.Getenv("POSTGRES_DB"),
+			os.Getenv("POSTGRES_SSLMODE"),
 			recentTracks,
 		)
 		duration = float64(time.Since(startTime).Seconds())
