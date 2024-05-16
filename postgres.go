@@ -80,7 +80,7 @@ func connectToDatabase(host, user, password, port, dbname, sslmode string) (*sql
 	// Build the connection string
 	connectionString :=
 		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-			host, port, user, password, dbname)
+			host, port, user, password, dbname, sslmode)
 
 	// Open a connection to the database
 	db, err := sql.Open("postgres", connectionString)
